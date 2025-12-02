@@ -25,7 +25,7 @@ class EmulatorService: ObservableObject {
             if let output = output {
                 let names = output.components(separatedBy: .newlines)
                     .filter { !$0.isEmpty }
-                androidEmulators = names.map { Emulator(name: $0, type: .android, uuid: nil) }
+                androidEmulators = names.map { Emulator(name: $0, type: .android, uuid: nil, osVersion: nil) }
             }
             
             // List iOS Simulators
@@ -52,7 +52,17 @@ class EmulatorService: ObservableObject {
             if let output = String(data: data, encoding: .utf8) {
                 var simulators: [Emulator] = []
                 let lines = output.components(separatedBy: .newlines)
+                
+                var currentOSVersion: String?
+                
                 for line in lines {
+                    if line.hasPrefix("--") && line.hasSuffix("--") {
+                        // Parse OS version header like "-- iOS 17.0 --"
+                        let trimmed = line.trimmingCharacters(in: CharacterSet(charactersIn: "- "))
+                        currentOSVersion = trimmed
+                        continue
+                    }
+                    
                     // Parse line like: "    iPhone 14 (UUID) (Shutdown)"
                     if line.contains("Shutdown") || line.contains("Booted") {
                         let parts = line.split(separator: "(")
@@ -61,7 +71,7 @@ class EmulatorService: ObservableObject {
                             let uuidPart = parts[1]
                             let uuid = uuidPart.replacingOccurrences(of: ")", with: "").trimmingCharacters(in: .whitespaces)
                             
-                            simulators.append(Emulator(name: name, type: .ios, uuid: uuid))
+                            simulators.append(Emulator(name: name, type: .ios, uuid: uuid, osVersion: currentOSVersion))
                         }
                     }
                 }
@@ -114,6 +124,20 @@ class EmulatorService: ObservableObject {
         openTask.arguments = ["-a", "Simulator"]
         
         try? openTask.run()
+    }
+    
+    func shutdownSimulator(uuid: String) {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        task.arguments = ["simctl", "shutdown", uuid]
+        try? task.run()
+    }
+    
+    func eraseSimulator(uuid: String) {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        task.arguments = ["simctl", "erase", uuid]
+        try? task.run()
     }
     
     private func runCommand(arguments: [String], completion: @escaping (String?, String?) -> Void) {

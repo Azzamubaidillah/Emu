@@ -6,7 +6,7 @@ struct EmulatorRow: View {
     
     var body: some View {
         HStack {
-            Image(systemName: emulator.type == .android ? "logo.android" : "applelogo") // SF Symbols doesn't have android logo, using generic or maybe "phone"
+            Image(systemName: emulator.type == .android ? "iphone" : "applelogo") 
                 .foregroundColor(emulator.type == .android ? .green : .primary)
             Text(emulator.name)
             Spacer()
@@ -29,12 +29,35 @@ struct EmulatorRow: View {
                     Label("Run", systemImage: "play.fill")
                 }
             } else {
-                Button(action: {
-                    if let uuid = emulator.uuid {
-                        service.runSimulator(uuid: uuid)
+                VStack(alignment: .trailing) {
+                    if let version = emulator.osVersion {
+                        Text(version)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-                }) {
-                    Image(systemName: "play.fill")
+                    
+                    Menu {
+                        Button("Boot") {
+                            if let uuid = emulator.uuid {
+                                service.runSimulator(uuid: uuid)
+                            }
+                        }
+                        Button("Shutdown") {
+                            if let uuid = emulator.uuid {
+                                service.shutdownSimulator(uuid: uuid)
+                            }
+                        }
+                        Divider()
+                        Button("Erase Content & Settings", role: .destructive) {
+                            if let uuid = emulator.uuid {
+                                service.eraseSimulator(uuid: uuid)
+                            }
+                        }
+                    } label: {
+                        Label("Actions", systemImage: "ellipsis.circle")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
                 }
             }
         }

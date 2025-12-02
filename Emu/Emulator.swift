@@ -10,4 +10,5 @@ struct Emulator: Identifiable, Hashable {
     let name: String
     let type: EmulatorType
     let uuid: String? // For iOS simulators
+    let osVersion: String? // For iOS simulators
 }

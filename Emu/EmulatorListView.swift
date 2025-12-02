@@ -11,18 +11,26 @@ struct EmulatorListView: View {
                     .padding()
             }
             
-            List {
-                Section(header: Text("Android")) {
-                    ForEach(service.emulators.filter { $0.type == .android }) { emulator in
+            HSplitView {
+                VStack(alignment: .leading) {
+                    Text("Android")
+                        .font(.headline)
+                        .padding(.leading)
+                    List(service.emulators.filter { $0.type == .android }) { emulator in
                         EmulatorRow(emulator: emulator, service: service)
                     }
                 }
+                .frame(minWidth: 200, maxWidth: .infinity)
                 
-                Section(header: Text("iOS")) {
-                    ForEach(service.emulators.filter { $0.type == .ios }) { emulator in
+                VStack(alignment: .leading) {
+                    Text("iOS")
+                        .font(.headline)
+                        .padding(.leading)
+                    List(service.emulators.filter { $0.type == .ios }) { emulator in
                         EmulatorRow(emulator: emulator, service: service)
                     }
                 }
+                .frame(minWidth: 200, maxWidth: .infinity)
             }
             .toolbar {
                 Button(action: {

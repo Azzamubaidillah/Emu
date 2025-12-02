@@ -5,8 +5,10 @@
 ## Features
 
 - 🚀 **Fast Launch**: Quickly start your Android emulators and iOS simulators.
-- 📋 **List Devices**: Automatically detects and lists all available AVDs and iOS Simulators.
-- 📱 **iOS Support**: Lists and boots iOS Simulators using `xcrun simctl`.
+- 📋 **Side-by-Side View**: Clean split view to manage Android and iOS devices simultaneously.
+- 📱 **iOS Support**: 
+  - Lists iOS Simulators with OS version.
+  - **Boot**, **Shutdown**, and **Erase Content & Settings** directly from the app.
 - ⚙️ **Advanced Options (Android)**:
   - **Cold Boot**: Start the emulator from a cold state (`-no-snapshot-load`).
   - **Wipe Data**: Reset the emulator data (`-wipe-data`).
