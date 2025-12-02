@@ -11,26 +11,16 @@ struct EmulatorListView: View {
                     .padding()
             }
             
-            List(service.emulators) { emulator in
-                HStack {
-                    Image(systemName: "phone") // Placeholder icon, SF Symbols doesn't have android. Maybe "phone" or "display"
-                    Text(emulator.name)
-                    Spacer()
-                    Menu {
-                        Button("Run") {
-                            service.runAvd(name: emulator.name)
-                        }
-                        Button("Cold Boot") {
-                            service.runAvd(name: emulator.name, options: ["-no-snapshot-load"])
-                        }
-                        Button("Wipe Data") {
-                            service.runAvd(name: emulator.name, options: ["-wipe-data"])
-                        }
-                        Button("No Boot Animation") {
-                            service.runAvd(name: emulator.name, options: ["-no-boot-anim"])
-                        }
-                    } label: {
-                        Label("Run", systemImage: "play.fill")
+            List {
+                Section(header: Text("Android")) {
+                    ForEach(service.emulators.filter { $0.type == .android }) { emulator in
+                        EmulatorRow(emulator: emulator, service: service)
+                    }
+                }
+                
+                Section(header: Text("iOS")) {
+                    ForEach(service.emulators.filter { $0.type == .ios }) { emulator in
+                        EmulatorRow(emulator: emulator, service: service)
                     }
                 }
             }

@@ -1,12 +1,13 @@
 # Emu - Android Emulator Runner for macOS
 
-**Emu** is a lightweight macOS application that allows you to list and launch your Android Virtual Devices (AVDs) directly from your menu bar or window, without needing to open Android Studio.
+**Emu** is a lightweight macOS application that allows you to list and launch your Android Virtual Devices (AVDs) and iOS Simulators directly from your menu bar or window.
 
 ## Features
 
-- 🚀 **Fast Launch**: Quickly start your Android emulators.
-- 📋 **List AVDs**: Automatically detects and lists all available AVDs from your Android SDK.
-- ⚙️ **Advanced Options**:
+- 🚀 **Fast Launch**: Quickly start your Android emulators and iOS simulators.
+- 📋 **List Devices**: Automatically detects and lists all available AVDs and iOS Simulators.
+- 📱 **iOS Support**: Lists and boots iOS Simulators using `xcrun simctl`.
+- ⚙️ **Advanced Options (Android)**:
   - **Cold Boot**: Start the emulator from a cold state (`-no-snapshot-load`).
   - **Wipe Data**: Reset the emulator data (`-wipe-data`).
   - **No Boot Animation**: Disable the boot animation for faster startup (`-no-boot-anim`).
@@ -16,6 +17,7 @@
 
 - macOS
 - Android SDK installed (usually via Android Studio)
+- Xcode installed (for iOS Simulator support)
 - **App Sandbox Disabled**: Due to the nature of launching external processes (`emulator` binary), this app requires the App Sandbox to be disabled to function correctly.
 
 ## Installation & Build

@@ -17,21 +17,61 @@ class EmulatorService: ObservableObject {
     }
     
     func listAvds() {
+        // List Android AVDs
         runCommand(arguments: ["-list-avds"]) { [weak self] output, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self?.errorMessage = "Failed to list AVDs: \(error)"
-                    return
-                }
-                
-                if let output = output {
-                    let names = output.components(separatedBy: .newlines)
-                        .filter { !$0.isEmpty }
-                    self?.emulators = names.map { Emulator(name: $0) }
-                    self?.errorMessage = nil
+            guard let self = self else { return }
+            
+            var androidEmulators: [Emulator] = []
+            if let output = output {
+                let names = output.components(separatedBy: .newlines)
+                    .filter { !$0.isEmpty }
+                androidEmulators = names.map { Emulator(name: $0, type: .android, uuid: nil) }
+            }
+            
+            // List iOS Simulators
+            self.listSimulators { iosSimulators in
+                DispatchQueue.main.async {
+                    self.emulators = androidEmulators + iosSimulators
+                    self.errorMessage = nil
                 }
             }
         }
+    }
+    
+    private func listSimulators(completion: @escaping ([Emulator]) -> Void) {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        task.arguments = ["simctl", "list", "devices", "available"]
+        
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        
+        do {
+            try task.run()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                var simulators: [Emulator] = []
+                let lines = output.components(separatedBy: .newlines)
+                for line in lines {
+                    // Parse line like: "    iPhone 14 (UUID) (Shutdown)"
+                    if line.contains("Shutdown") || line.contains("Booted") {
+                        let parts = line.split(separator: "(")
+                        if parts.count >= 2 {
+                            let name = parts[0].trimmingCharacters(in: .whitespaces)
+                            let uuidPart = parts[1]
+                            let uuid = uuidPart.replacingOccurrences(of: ")", with: "").trimmingCharacters(in: .whitespaces)
+                            
+                            simulators.append(Emulator(name: name, type: .ios, uuid: uuid))
+                        }
+                    }
+                }
+                completion(simulators)
+                return
+            }
+        } catch {
+            print("Failed to list simulators: \(error)")
+        }
+        completion([])
     }
     
     func runAvd(name: String, options: [String] = []) {
@@ -58,6 +98,22 @@ class EmulatorService: ObservableObject {
                 self.errorMessage = "Failed to run AVD \(name): \(error.localizedDescription)"
             }
         }
+    }
+    
+    func runSimulator(uuid: String) {
+        // Boot simulator
+        let bootTask = Process()
+        bootTask.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        bootTask.arguments = ["simctl", "boot", uuid]
+        
+        try? bootTask.run()
+        
+        // Open Simulator app
+        let openTask = Process()
+        openTask.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        openTask.arguments = ["-a", "Simulator"]
+        
+        try? openTask.run()
     }
     
     private func runCommand(arguments: [String], completion: @escaping (String?, String?) -> Void) {
